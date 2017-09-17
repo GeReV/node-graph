@@ -1,4 +1,4 @@
-import "blissfuljs";
+import 'blissfuljs';
 
 import styles from './styles.scss';
 
@@ -18,7 +18,7 @@ export default class NodeGraph {
   }
 
   render(container) {
-    this.node = $.create("div", {
+    this.node = $.create('div', {
       className: styles.nodegraph,
       events: {
         mousedown: e => {
@@ -30,7 +30,7 @@ export default class NodeGraph {
             target.initPositionX = target.positionX || 0;
             target.initPositionY = target.positionY || 0;
 
-            target.classList.add("Node-dragging");
+            target.classList.add('Node-dragging');
 
             this.initMouseX = e.clientX;
             this.initMouseY = e.clientY;
@@ -41,7 +41,7 @@ export default class NodeGraph {
         },
         mouseup: e => {
           if (this.dragging) {
-            this.dragging.classList.remove("Node-dragging");
+            this.dragging.classList.remove('Node-dragging');
 
             this.dragging = null;
 

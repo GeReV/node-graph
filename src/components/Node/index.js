@@ -29,3 +29,4 @@ export default class Node {
 }
 
 Node.identifier = styles.node;
+Node.input = styles.node_input;

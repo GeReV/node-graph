@@ -1,13 +1,17 @@
-import 'blissfuljs';
+import * as d3 from 'd3';
 
 import styles from './styles.scss';
 
 import Node from '../Node';
 
+function addEventListener(target, type, fn) {
+  target.addEventListener(type, fn, false);
+}
+
 export default class NodeGraph {
-  selectDragNode(target) {
+  selectDragNode(target, identifier) {
     while (target !== this.node) {
-      if (target.classList.contains(Node.identifier)) {
+      if (target.classList.contains(identifier)) {
         return target;
       }
 
@@ -17,55 +21,100 @@ export default class NodeGraph {
     return null;
   }
 
+  createDrag(e) {
+    let target;
+
+    target = this.selectDragNode(e.target, Node.input);
+
+    if (target) {
+      const graph = this.graph;
+
+      const rect = target.getBoundingClientRect();
+
+      const path = graph.selectAll('path').data([1]).enter().append('path').attr('class', styles.path);
+
+      console.log(path);
+
+      return {
+        start() {
+          //
+        },
+        stop() {
+          path.remove();
+        },
+        move(x, y) {
+          path.attr(
+            'd',
+            () => `M${this.initPositionX},${this.initPositionY}C${x},${this.initPositionY} ${this.initPositionX},${y} ${x},${y}`
+          );
+        },
+        initMouseX: e.clientX,
+        initMouseY: e.clientY,
+        initPositionX: rect.x,
+        initPositionY: rect.y + rect.height / 2,
+      };
+    }
+
+    target = this.selectDragNode(e.target, Node.identifier);
+
+    if (target) {
+      return {
+        start() {
+          target.classList.add('Node-dragging');
+        },
+        stop() {
+          target.classList.remove('Node-dragging');
+        },
+        move(x, y) {
+          target.positionX = x;
+          target.positionY = y;
+          target.style.transform = `translate3d(${x}px, ${y}px, 0)`;
+        },
+        initMouseX: e.clientX,
+        initMouseY: e.clientY,
+        initPositionX: target.positionX || 0,
+        initPositionY: target.positionY || 0,
+      };
+    }
+
+    return null;
+  }
+
   render(container) {
-    this.node = $.create('div', {
-      className: styles.nodegraph,
-      events: {
-        mousedown: e => {
-          const target = this.selectDragNode(e.target);
+    this.node = document.createElement('div');
+    this.node.classList.add(styles.nodegraph);
 
-          if (target) {
-            this.dragging = target;
+    addEventListener(this.node, 'mousedown', e => {
+      this.drag = this.createDrag(e);
 
-            target.initPositionX = target.positionX || 0;
-            target.initPositionY = target.positionY || 0;
+      if (this.drag) {
+        this.drag.start();
 
-            target.classList.add('Node-dragging');
+        e.preventDefault();
+        e.stopPropagation();
+      }
+    });
+    addEventListener(this.node, 'mouseup', e => {
+      if (this.drag) {
+        this.drag.stop();
+        this.drag = null;
 
-            this.initMouseX = e.clientX;
-            this.initMouseY = e.clientY;
+        e.preventDefault();
+        e.stopPropagation();
+      }
+    });
+    addEventListener(this.node, 'mousemove', e => {
+      const dragging = this.drag;
 
-            e.preventDefault();
-            e.stopPropagation();
-          }
-        },
-        mouseup: e => {
-          if (this.dragging) {
-            this.dragging.classList.remove('Node-dragging');
+      if (dragging) {
+        const dX = e.clientX - dragging.initMouseX - this.node.offsetLeft;
+        const dY = e.clientY - dragging.initMouseY - this.node.offsetTop;
 
-            this.dragging = null;
+        const positionX = dragging.initPositionX + dX + this.node.offsetLeft;
+        const positionY = dragging.initPositionY + dY + this.node.offsetTop;
 
-            this.initMouseX = null;
-            this.initMouseY = null;
-
-            e.preventDefault();
-            e.stopPropagation();
-          }
-        },
-        mousemove: e => {
-          const dragging = this.dragging;
-
-          if (dragging) {
-            const dX = e.clientX - this.initMouseX - this.node.offsetLeft;
-            const dY = e.clientY - this.initMouseY - this.node.offsetTop;
-
-            dragging.positionX = dragging.initPositionX + dX + this.node.offsetLeft;
-            dragging.positionY = dragging.initPositionY + dY + this.node.offsetTop;
-
-            dragging.style.transform = `translate3d(${dragging.positionX}px, ${dragging.positionY}px, 0)`;
-          }
-        },
-      },
+        dragging.move.call(dragging, positionX, positionY);
+      }
     });
 
     const node = new Node();
@@ -73,5 +122,10 @@ export default class NodeGraph {
     node.render(this.node);
 
     container.appendChild(this.node);
+
+    this.graph = d3.select(this.node).append('svg')
+    .attr('class', styles.graph)
+    .attr('width', '100%')
+    .attr('height', '100%');
   }
 }

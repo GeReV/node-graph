@@ -9,6 +9,7 @@
     "babel-preset-kyt-react": "0.2.0",
     "bliss": "^1.0.1",
     "blissfuljs": "^1.0.3",
+    "d3": "^4.10.2",
     "html-webpack-plugin": "2.22.0",
     "kyt": "0.8.0",
     "react": "15.3.0",

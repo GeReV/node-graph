@@ -45,7 +45,7 @@ export default class NodeGraph {
         move(x, y) {
           path.attr(
             'd',
-            () => `M${this.initPositionX},${this.initPositionY}C${x},${this.initPositionY} ${this.initPositionX},${y} ${x},${y}`
+            () => `M${this.initPositionX},${this.initPositionY}C${this.initPositionX - 100},${this.initPositionY} ${x + 100},${y} ${x},${y}`
           );
         },
         initMouseX: e.clientX,

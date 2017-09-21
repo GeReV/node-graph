@@ -10,6 +10,4 @@ const root = document.querySelector('#root');
 //   });
 // }
 
-const graph = new NodeGraph();
-
-graph.render(root);
+new NodeGraph(root);
